@@ -66,6 +66,7 @@ cypress
 
 # dependencies
 /node_modules
+/cypress
 /.pnp
 .pnp.js
 
