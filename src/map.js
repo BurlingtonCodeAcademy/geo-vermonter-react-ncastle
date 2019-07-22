@@ -1,7 +1,7 @@
 import React from 'react';
 import L from 'leaflet';
-import BorderData from './border';
 import CountyData from './vtCountyPolygons';
+
 
 const style = {
   width: '100%',
@@ -35,9 +35,12 @@ class Map extends React.Component {
     // add marker to the markerPosition passed in as a prop
     this.marker = L.marker(this.props.markerPosition).addTo(this.map);
 
-    console.log(BorderData.geometry.coordinates);
+    console.log(this.props.borderLayer);
     // add geoJSON for vermont border
-    const VTBorder = L.geoJSON(BorderData).addTo(this.map);
+    this.VTBorder1 = this.props.borderLayer;
+    this.VTBorder1.addTo(this.map);
+    // this.VTBorder = L.geoJSON(BorderData).addTo(this.map);
+    // console.log(this.VTBorder);
 
     // const countyBorder = L.geoJSON(CountyData, {style: myStyle}).addTo(this.map);
   }
@@ -46,6 +49,7 @@ class Map extends React.Component {
   componentDidUpdate({ markerPosition }) {
     // check if position has changed
     if (this.props.markerPosition !== markerPosition) {
+      // set latlng of marker if it is different
       this.marker.setLatLng(this.props.markerPosition);
     }
   }
