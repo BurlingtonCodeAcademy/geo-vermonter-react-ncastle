@@ -2,6 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import Map from './map';
 
+import "./style.css";
+
 class App extends React.Component {
   constructor() {
     super()
@@ -25,11 +27,7 @@ class App extends React.Component {
       <div>
         <Map markerPosition={markerPosition} />
         <div>Current markerPosition: lat: {markerPosition.lat}, lng: {markerPosition.lng}</div>
-        <button
-          onClick={this.moveMarker}
-        >
-          Move marker
-        </button>
+        <button onClick={this.moveMarker} > Move marker </button>
       </div>
     );
   }
