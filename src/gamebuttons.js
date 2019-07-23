@@ -10,17 +10,17 @@ class GameButtons extends React.Component {
     if(!this.props.gameStarted) {
       return (
         <div id="game-buttons">
-          <button onClick={this.props.clickStart}>Start</button>
-          <button disabled="disabled">Guess</button>
-          <button disabled="disabled">Quit</button>
+          <button onClick={this.props.clickStart}>Start a Game</button>
+          <button disabled="disabled">Guess the Spot</button>
+          <button disabled="disabled">I Give Up!</button>
         </div>
       );
     } else {
       return(
         <div id="game-buttons">
-          <button disabled="disabled" onClick={this.props.clickStart}>Start</button>
-          <button>Guess</button>
-          <button>Quit</button>
+          <button disabled="disabled" onClick={this.props.clickStart}>Start a Game</button>
+          <button>Guess the Spot</button>
+          <button onClick={this.props.handleGiveup}>I Give Up!</button>
         </div>
       );
     }

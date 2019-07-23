@@ -3,10 +3,13 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import leafletPip from "@mapbox/leaflet-pip";
 import L from 'leaflet';
+import E from 'esri-leaflet';
+
 // import components
 import Map from './map';
 import GameButtons from './gamebuttons';
 import BorderData from './border';
+import CountyData from './vtCountyPolygons';
 import LocationInfo from './locationinfo';
 
 // main app component
@@ -18,13 +21,18 @@ class App extends React.Component {
     // state for app
     this.state = {
       markerPosition: { lat: 43.99528, lng: -72.69156 },
+      county: undefined,
+      town: undefined,
       gameStarted: false,
+      giveUp: false,
       borderLayer: L.geoJSON(BorderData),
+      countyLayer: L.geoJSON(CountyData),
     };
     // bind functions
     this.moveMarker = this.moveMarker.bind(this);
     this.clickStart = this.clickStart.bind(this);
     this.startGame = this.startGame.bind(this);
+    this.handleGiveup = this.handleGiveup.bind(this);
     console.log(this.state.borderLayer);
   }
 
@@ -48,7 +56,8 @@ class App extends React.Component {
     this.startGame();
   }
 
-  // function that picks a random lat and long, centers the map on that spot
+  // function that picks a random lat and long,
+  // centers the map on that spot, and zooms in
   startGame() {
     const { borderLayer } = this.state;
     console.log(borderLayer);
@@ -92,10 +101,50 @@ class App extends React.Component {
       markerPosition: {
         lat: lat,
         lng: lon
-      }
+      },
+      gameStarted: true,
+      giveUp: false
     });
     
     console.log(`${this.state.markerPosition.lng} ${this.state.markerPosition.lat}`);
+  }
+
+  // function that handles when 'I Give Up!' is clicked
+  handleGiveup() {
+    let { lat, lng } = this.state.markerPosition;
+
+    // test if inside border
+    const layerArray = leafletPip.pointInLayer(
+      [lng, lat], this.state.countyLayer
+    );
+    console.log({layerArray});
+    console.log(layerArray[0].feature.properties.CNTYNAME)
+
+    let county = layerArray[0].feature.properties.CNTYNAME;
+
+    // fetch json from nominatim containing the address specified by the lat and lon query params
+    // using nominatim reverse geocoding, may be a different / better way to do this
+    fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=geojson`)
+    .then(response => response.json())
+    .then(json => {
+      console.log({json});
+      console.log('town: ' + json.features[0].properties.address.town)
+      console.log('city: ' + json.features[0].properties.address.city)
+      console.log('village: ' + json.features[0].properties.address.village)
+      console.log('hamlet: ' + json.features[0].properties.address.hamlet)
+      let address = json.features[0].properties.address;  // get address from json
+      let town = address.town || address.city || address.village || address.hamlet; // set town
+      console.log({town});
+
+      // set the state which updates components
+      this.setState({
+        gameStarted: false,
+        giveUp: true,
+        county: county,
+        town: town
+      })
+    }); // end fetch
+
   }
 
   // render function
@@ -103,15 +152,19 @@ class App extends React.Component {
     const markerPosition = this.state.markerPosition;
     const gameStarted = this.state.gameStarted;
     const borderLayer = this.state.borderLayer;
+    const giveUp = this.state.giveUp;
+    const county = this.state.county;
+    const town = this.state.town;
     console.log(this.state.markerPosition);
     console.log({markerPosition});
     return (
       <div>
         <Map markerPosition={markerPosition} borderLayer={borderLayer} />
-        <LocationInfo />
+        { giveUp && <LocationInfo markerPosition={this.state.markerPosition} county={county} town={town} /> }
+        { !giveUp && <LocationInfo markerPosition={{lat: '??', lng: '??'}} county={'??'} town={'??'} /> }
         <div>Current markerPosition: lat: {markerPosition.lat}, lng: {markerPosition.lng}</div>
         <button onClick={this.moveMarker} > Move marker </button>
-        <GameButtons gameStarted={gameStarted} clickStart={this.clickStart} />
+        <GameButtons gameStarted={gameStarted} clickStart={this.clickStart} handleGiveup={this.handleGiveup} />
       </div>
     );
   }

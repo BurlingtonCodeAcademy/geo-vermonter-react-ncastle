@@ -10,10 +10,10 @@ class LocationInfo extends React.Component {
 
   // required render function called every time state or props change
   render() {
-    let lat = '??';
-    let long = '??';
-    let county = '??';
-    let town = '??';
+    let lat = this.props.markerPosition.lat;
+    let long = this.props.markerPosition.lng;
+    let county = this.props.county;
+    let town = this.props.town;
 
     return(
       <div id="location">

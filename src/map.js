@@ -1,8 +1,6 @@
 import React from 'react';
 import L from 'leaflet';
-import CountyData from './vtCountyPolygons';
 import CountyMap from './vermont-county-map.gif';
-import { isAbsolute } from 'path';
 
 
 const mapStyle = {
@@ -20,12 +18,12 @@ var borderStyle = {
 };
 var countyMapStyle = {
   height: '600px',
-  "margin-right": '3%',
+  marginRight: '3%',
   border: "2px solid black"
 };
 var divStyle = {
   display: 'flex',
-  "align-items": "center"
+  alignItems: "center"
 }
 
 
