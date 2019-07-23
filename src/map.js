@@ -8,9 +8,11 @@ const style = {
   height: '600px'
 }
 var myStyle = {
-  "color": "#ff7800",
+  "color": "#ff7805",
+  "fillColor": "#fff",
   "weight": 5,
-  "opacity": 0.65
+  "opacity": 1,
+  "fillOpacity": 0
 };
 
 // create a map component
@@ -26,7 +28,7 @@ class Map extends React.Component {
       zoom: 8,         // set the zoom value fixed at 8
       layers: [   // set the layer that the map will use to display
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-          attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+          attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA,USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
         }), // can add more layers
       ]
     });
@@ -39,6 +41,7 @@ class Map extends React.Component {
     // get borderLayer from props and add to the map
     this.VTBorder = this.props.borderLayer;
     this.VTBorder.addTo(this.map);
+    this.VTBorder.setStyle(myStyle);
 
     // const countyBorder = L.geoJSON(CountyData, {style: myStyle}).addTo(this.map);
   }
@@ -49,6 +52,11 @@ class Map extends React.Component {
     if (this.props.markerPosition !== markerPosition) {
       // set latlng of marker if it is different
       this.marker.setLatLng(this.props.markerPosition);
+      // if the game is started, set the maps zoom and center
+      this.map.setMinZoom(18);
+      this.map.setMaxZoom(18);
+      this.map.setZoom(18);
+      this.map.panTo(this.props.markerPosition);
     }
   }
 

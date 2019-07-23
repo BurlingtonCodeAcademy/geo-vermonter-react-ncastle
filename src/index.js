@@ -1,10 +1,13 @@
+// import react & leaflet
 import React from 'react';
 import ReactDOM from 'react-dom';
+import leafletPip from "@mapbox/leaflet-pip";
+import L from 'leaflet';
+// import components
 import Map from './map';
 import GameButtons from './gamebuttons';
 import BorderData from './border';
-import leafletPip from "@mapbox/leaflet-pip";
-import L from 'leaflet';
+import LocationInfo from './locationinfo';
 
 // main app component
 class App extends React.Component {
@@ -108,7 +111,7 @@ class App extends React.Component {
         <div>Current markerPosition: lat: {markerPosition.lat}, lng: {markerPosition.lng}</div>
         <button onClick={this.moveMarker} > Move marker </button>
         <GameButtons gameStarted={gameStarted} clickStart={this.clickStart} />
-        
+        <LocationInfo />
       </div>
     );
   }
