@@ -1,19 +1,33 @@
 import React from 'react';
 import L from 'leaflet';
 import CountyData from './vtCountyPolygons';
+import CountyMap from './vermont-county-map.gif';
+import { isAbsolute } from 'path';
 
 
-const style = {
-  width: '100%',
-  height: '600px'
-}
-var myStyle = {
-  "color": "#ff7805",
-  "fillColor": "#fff",
-  "weight": 5,
-  "opacity": 1,
-  "fillOpacity": 0
+const mapStyle = {
+  width: '70%',
+  height: '600px',
+  margin: '1% 3%',
+  padding: '0',
+  border: '2px solid black',
 };
+var borderStyle = {
+  color: "#ff7805",
+  weight: 5,
+  opacity: 1,
+  fillOpacity: 0
+};
+var countyMapStyle = {
+  height: '600px',
+  "margin-right": '3%',
+  border: "2px solid black"
+};
+var divStyle = {
+  display: 'flex',
+  "align-items": "center"
+}
+
 
 // create a map component
 class Map extends React.Component {
@@ -41,7 +55,7 @@ class Map extends React.Component {
     // get borderLayer from props and add to the map
     this.VTBorder = this.props.borderLayer;
     this.VTBorder.addTo(this.map);
-    this.VTBorder.setStyle(myStyle);
+    this.VTBorder.setStyle(borderStyle);
 
     // const countyBorder = L.geoJSON(CountyData, {style: myStyle}).addTo(this.map);
   }
@@ -61,7 +75,12 @@ class Map extends React.Component {
   }
 
   render() {
-    return <div id='map' style={style}></div>
+    return (
+      <div style={divStyle}>
+        <div id='map' style={mapStyle}></div>
+        <img src={CountyMap} alt={"County Map"} style={countyMapStyle} />
+      </div>
+    );
   }
 
 }

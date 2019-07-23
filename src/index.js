@@ -108,10 +108,10 @@ class App extends React.Component {
     return (
       <div>
         <Map markerPosition={markerPosition} borderLayer={borderLayer} />
+        <LocationInfo />
         <div>Current markerPosition: lat: {markerPosition.lat}, lng: {markerPosition.lng}</div>
         <button onClick={this.moveMarker} > Move marker </button>
         <GameButtons gameStarted={gameStarted} clickStart={this.clickStart} />
-        <LocationInfo />
       </div>
     );
   }
