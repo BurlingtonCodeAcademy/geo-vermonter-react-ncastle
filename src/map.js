@@ -36,11 +36,9 @@ class Map extends React.Component {
     this.marker = L.marker(this.props.markerPosition).addTo(this.map);
 
     console.log(this.props.borderLayer);
-    // add geoJSON for vermont border
-    this.VTBorder1 = this.props.borderLayer;
-    this.VTBorder1.addTo(this.map);
-    // this.VTBorder = L.geoJSON(BorderData).addTo(this.map);
-    // console.log(this.VTBorder);
+    // get borderLayer from props and add to the map
+    this.VTBorder = this.props.borderLayer;
+    this.VTBorder.addTo(this.map);
 
     // const countyBorder = L.geoJSON(CountyData, {style: myStyle}).addTo(this.map);
   }

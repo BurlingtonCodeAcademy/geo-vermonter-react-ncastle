@@ -47,39 +47,52 @@ class App extends React.Component {
 
   // function that picks a random lat and long, centers the map on that spot
   startGame() {
+    const { borderLayer } = this.state;
+    console.log(borderLayer);
+    // there might be a better way to do this
+    const vtBounds = borderLayer.getBounds();
+    const xMax = vtBounds.getEast();
+    const xMin = vtBounds.getWest();
+    const yMax = vtBounds.getSouth();
+    const yMin = vtBounds.getNorth();
 
-    // find random lat and long
+    // find random lat and long 
+    // -> pull this out and generalize to find 
+    // random points in a given polygon/border?
     let randomLatLon = () => {
-      // set lat and lon ranges
-      let latRange = 45 - 43 + 1;
-      let lonRange = -72 - -73 + 1;
       // get random numbers
-      const lat = 43 + Math.random() * latRange;
-      const lon = -73 + Math.random() * lonRange;
-      // set marker position to new randomLatLon
-      this.state.markerPosition = { lat: lat, lng: lon };
-    }
-
-    // checks if the current position of the marker is inside the border of VT
-    let checkInsideBorder = () => {
-      // check if lat/lng is inside of border using leafletPip
+      const lat = yMin + (Math.random() * (yMax - yMin));
+      const lon = xMin + (Math.random() * (xMax - xMin));
+      console.log(`${lat} ${lon}`);
+      // test if inside border
       const layerLength = leafletPip.pointInLayer(
-        [this.state.markerPosition.lng, this.state.markerPosition.lat], this.state.borderLayer
-      ).length;
+                            [lon, lat], borderLayer, true
+                          ).length;
+      console.log({layerLength});
       const result = layerLength ? "yes" : "no";
-      return result;
+      console.log({result});
+      
+      // if inside border, return the lat and lon as an object
+      if (result === "yes") {
+        return {lat:lat, lon: lon};
+      //else return randomLatLon()
+      } else {
+        return randomLatLon();
+      }
+      
     }
-    
-    // set result to no by default
-    let result = "no";
+    //console.log(` random: ${JSON.stringify(randomLatLon())}`);
+    const { lat, lon } = randomLatLon();
 
-    // while the marker is not inside the border
-    while (result === "no") {
-      randomLatLon(); // set marker to a random lat lon
-      result = checkInsideBorder();   // check if the lat lon is inside the border
-    }
-    // set state of game started to true
-    this.setState({ gameStarted: true });
+    // set marker position to new randomLatLon
+    this.setState({
+      markerPosition: {
+        lat: lat,
+        lng: lon
+      }
+    });
+    
+    console.log(`${this.state.markerPosition.lng} ${this.state.markerPosition.lat}`);
   }
 
   // render function
@@ -87,6 +100,8 @@ class App extends React.Component {
     const markerPosition = this.state.markerPosition;
     const gameStarted = this.state.gameStarted;
     const borderLayer = this.state.borderLayer;
+    console.log(this.state.markerPosition);
+    console.log({markerPosition});
     return (
       <div>
         <Map markerPosition={markerPosition} borderLayer={borderLayer} />
