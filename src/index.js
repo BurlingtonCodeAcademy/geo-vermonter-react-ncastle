@@ -3,7 +3,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import leafletPip from "@mapbox/leaflet-pip";
 import L from 'leaflet';
-import E from 'esri-leaflet';
+import Modal from 'react-modal';
 
 // import components
 import Map from './map';
@@ -11,6 +11,35 @@ import GameButtons from './gamebuttons';
 import BorderData from './border';
 import CountyData from './vtCountyPolygons';
 import LocationInfo from './locationinfo';
+import CountyList from './countyList';
+
+Modal.setAppElement('#root');
+
+const customStyles = {
+  overlay : {
+    // covers the entire viewport with slightly transparent color
+    backgroundColor       : 'rgba(185, 200, 170, .8)',
+    height                : '100vh',
+    width                 : '100vw',
+    margin                : '0',
+  },
+  content : {
+    top                   : '50%',
+    left                  : '50%',
+    right                 : 'auto',
+    bottom                : 'auto',
+    marginRight           : '-50%',
+    transform             : 'translate(-50%, -50%)',
+    zIndex                : '3',
+    backgroundColor       : "gray",
+    border                : "2px solid rgb(120, 235, 140)"
+  },
+};
+
+const mHeader = {
+  marginBottom: "20px",
+}
+
 
 // main app component
 class App extends React.Component {
@@ -27,12 +56,19 @@ class App extends React.Component {
       giveUp: false,
       borderLayer: L.geoJSON(BorderData),
       countyLayer: L.geoJSON(CountyData),
+      modalOpen: false,
     };
     // bind functions
     this.moveMarker = this.moveMarker.bind(this);
     this.clickStart = this.clickStart.bind(this);
     this.startGame = this.startGame.bind(this);
     this.handleGiveup = this.handleGiveup.bind(this);
+    this.openModal = this.openModal.bind(this);
+    this.afterOpenModal = this.afterOpenModal.bind(this);
+    this.closeModal = this.closeModal.bind(this);
+    this.handleGuess= this.handleGuess.bind(this);
+    this.getCounty = this.getCounty.bind(this);
+    this.getTown = this.getTown.bind(this);
     console.log(this.state.borderLayer);
   }
 
@@ -95,6 +131,8 @@ class App extends React.Component {
     }
     //console.log(` random: ${JSON.stringify(randomLatLon())}`);
     const { lat, lon } = randomLatLon();
+    const county = this.getCounty();
+    const town = this.getTown(lat, lon);
 
     // set marker position to new randomLatLon
     this.setState({
@@ -103,28 +141,32 @@ class App extends React.Component {
         lng: lon
       },
       gameStarted: true,
-      giveUp: false
+      giveUp: false,
+      county: county,
+      town: town
     });
     
-    console.log(`${this.state.markerPosition.lng} ${this.state.markerPosition.lat}`);
+    console.log(`${this.state.markerPosition.lng} ${this.state.markerPosition.lat} ${this.state.county} ${this.state.town}`);
   }
 
   // function that handles when 'I Give Up!' is clicked
   handleGiveup() {
-    let { lat, lng } = this.state.markerPosition;
 
-    // test if inside border
-    const layerArray = leafletPip.pointInLayer(
-      [lng, lat], this.state.countyLayer
-    );
-    console.log({layerArray});
-    console.log(layerArray[0].feature.properties.CNTYNAME)
+      // set the state which updates components
+      this.setState({
+        gameStarted: false,
+        giveUp: true,
+        // county: county,
+        // town: town
+      })
 
-    let county = layerArray[0].feature.properties.CNTYNAME;
+  }
 
+  /***!! put this into a function that takes a lat and long and returns a count and town !!***/
     // fetch json from nominatim containing the address specified by the lat and lon query params
     // using nominatim reverse geocoding, may be a different / better way to do this
-    fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=geojson`)
+  getTown(lat, lng) {
+    return fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=geojson`)
     .then(response => response.json())
     .then(json => {
       console.log({json});
@@ -135,16 +177,48 @@ class App extends React.Component {
       let address = json.features[0].properties.address;  // get address from json
       let town = address.town || address.city || address.village || address.hamlet; // set town
       console.log({town});
+      return town;
+    });
+  }
 
-      // set the state which updates components
-      this.setState({
-        gameStarted: false,
-        giveUp: true,
-        county: county,
-        town: town
-      })
-    }); // end fetch
+  getCounty() {
+    let { lat, lng } = this.state.markerPosition;
 
+    // test if inside border
+    const layerArray = leafletPip.pointInLayer(
+      [lng, lat], this.state.countyLayer
+    );
+    console.log({layerArray});
+    console.log(layerArray[0].feature.properties.CNTYNAME)
+
+    let county = layerArray[0].feature.properties.CNTYNAME;
+    return county;
+  }
+
+  // modal functions
+
+  // function handles opening modal
+  openModal() {
+    this.setState({modalOpen: true});
+  }
+
+  //function handles what happens after model opens
+  afterOpenModal() {
+    // references are now sync'd and can be accessed.
+    // this.subtitle.style.color = '#f00';
+  }
+  
+  // function handles closing modal
+  closeModal() {
+    this.setState({modalOpen: false});
+  }
+
+  // function will handle what happens when user makes a guess
+  handleGuess(e) {
+    e.preventDefault();
+    console.log('guess!');
+
+    this.closeModal();
   }
 
   // render function
@@ -157,14 +231,42 @@ class App extends React.Component {
     const town = this.state.town;
     console.log(this.state.markerPosition);
     console.log({markerPosition});
+
     return (
       <div>
         <Map markerPosition={markerPosition} borderLayer={borderLayer} />
-        { giveUp && <LocationInfo markerPosition={this.state.markerPosition} county={county} town={town} /> }
-        { !giveUp && <LocationInfo markerPosition={{lat: '??', lng: '??'}} county={'??'} town={'??'} /> }
+        { // if give up clicked, give LocationInfo the markerPosition, county, and town 
+          giveUp && 
+            <LocationInfo markerPosition={this.state.markerPosition} 
+                          county={county} town={town} /> }
+        { // if give up button not clicked, LocationInfo gets '??'
+          !giveUp && 
+            <LocationInfo markerPosition={{lat: '??', lng: '??'}}
+                          county={'??'} town={'??'} /> }
         <div>Current markerPosition: lat: {markerPosition.lat}, lng: {markerPosition.lng}</div>
         <button onClick={this.moveMarker} > Move marker </button>
-        <GameButtons gameStarted={gameStarted} clickStart={this.clickStart} handleGiveup={this.handleGiveup} />
+        <GameButtons gameStarted={gameStarted}
+                    clickStart={this.clickStart}
+                    handleGiveup={this.handleGiveup}
+                    openGuessModal={this.openModal} />
+
+        <Modal  id="guessModal"
+                isOpen={this.state.modalOpen}
+                onAfterOpen={this.afterOpenModal}
+                onRequestClose={this.closeModal}
+                style={customStyles}
+                contentLabel="Example Modal" >
+
+          <h2 style={mHeader}>Know where you are?</h2>
+          
+          <form >
+            <label>Guess the County: </label>
+            <CountyList />
+            <button onClick={this.handleGuess}>Guess</button>
+            <button onClick={this.closeModal}>Cancel</button>
+          </form>
+
+        </Modal>
       </div>
     );
   }

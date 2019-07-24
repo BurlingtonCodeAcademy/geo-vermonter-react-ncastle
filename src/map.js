@@ -9,12 +9,13 @@ const mapStyle = {
   margin: '1% 3%',
   padding: '0',
   border: '2px solid black',
+  zIndex: '0'
 };
 var borderStyle = {
   color: "#ff7805",
   weight: 5,
   opacity: 1,
-  fillOpacity: 0
+  fillOpacity: 0,
 };
 var countyMapStyle = {
   height: '600px',
