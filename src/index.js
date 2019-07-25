@@ -12,6 +12,7 @@ import BorderData from './border';
 import CountyData from './vtCountyPolygons';
 import LocationInfo from './locationinfo';
 import CountyList from './countyList';
+import MovementButtons from './movementButtons';
 
 Modal.setAppElement('#root');
 
@@ -76,7 +77,7 @@ class App extends React.Component {
     this.afterOpenModal = this.afterOpenModal.bind(this);
     this.closeModal = this.closeModal.bind(this);
     this.handleGuess= this.handleGuess.bind(this);
-    this.getCounty = this.getCounty.bind(this);
+    // this.getCounty = this.getCounty.bind(this);
     this.getTown = this.getTownCounty.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.handleGuess = this.handleGuess.bind(this);
@@ -194,7 +195,7 @@ class App extends React.Component {
   //   // test if inside border
   //   const layerArray = leafletPip.pointInLayer(
   //     [lng, lat], this.state.countyLayer
-  //   );
+  //   ); 
   //   console.log({layerArray});
   //   console.log(layerArray[0].feature.properties.CNTYNAME)
 
@@ -281,6 +282,8 @@ class App extends React.Component {
                     clickStart={this.clickStart}
                     handleGiveup={this.handleGiveup}
                     openGuessModal={this.openModal} />
+        
+        <MovementButtons />
 
         <Modal  id="guessModal"
                 closeTimeoutMS={1500}

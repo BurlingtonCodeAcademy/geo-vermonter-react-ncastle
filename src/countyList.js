@@ -3,8 +3,6 @@ import React from 'react';
 
 class CountyList extends React.Component {
 
-  
-  
   render() {
     return(
       <select name="counties" value={this.props.guess} onChange={this.props.handleChange}>

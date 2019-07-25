@@ -11,18 +11,18 @@ const mapStyle = {
   border: '2px solid black',
   zIndex: '0'
 };
-var borderStyle = {
+const borderStyle = {
   color: "#ff7805",
   weight: 5,
   opacity: 1,
   fillOpacity: 0,
 };
-var countyMapStyle = {
+const countyMapStyle = {
   height: '600px',
   marginRight: '3%',
   border: "2px solid black"
 };
-var divStyle = {
+const divStyle = {
   display: 'flex',
   alignItems: "center"
 }
