@@ -94,7 +94,7 @@ class App extends React.Component {
 
   // function that picks a random lat and long,
   // centers the map on that spot, and zooms in
-  startGame() {
+  async startGame() {
     const { borderLayer } = this.state;
     console.log(borderLayer);
     // there might be a better way to do this
@@ -132,7 +132,8 @@ class App extends React.Component {
     //console.log(` random: ${JSON.stringify(randomLatLon())}`);
     const { lat, lon } = randomLatLon();
     const county = this.getCounty();
-    const town = this.getTown(lat, lon);
+    const town = await this.getTown(lat, lon);
+    console.log(`${town} ${county}`);
 
     // set marker position to new randomLatLon
     this.setState({
@@ -156,31 +157,24 @@ class App extends React.Component {
       this.setState({
         gameStarted: false,
         giveUp: true,
-        // county: county,
-        // town: town
       })
 
   }
 
-  /***!! put this into a function that takes a lat and long and returns a count and town !!***/
     // fetch json from nominatim containing the address specified by the lat and lon query params
     // using nominatim reverse geocoding, may be a different / better way to do this
-  getTown(lat, lng) {
-    return fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=geojson`)
+  async getTown(lat, lng) {
+    let town = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=geojson`)
     .then(response => response.json())
     .then(json => {
-      console.log({json});
-      console.log('town: ' + json.features[0].properties.address.town)
-      console.log('city: ' + json.features[0].properties.address.city)
-      console.log('village: ' + json.features[0].properties.address.village)
-      console.log('hamlet: ' + json.features[0].properties.address.hamlet)
       let address = json.features[0].properties.address;  // get address from json
       let town = address.town || address.city || address.village || address.hamlet; // set town
-      console.log({town});
-      return town;
+      return JSON.stringify(town);
     });
+    return town.split('"')[1];  // this removes the quotation marks from string
   }
 
+  // returns the county that the marker is currently in
   getCounty() {
     let { lat, lng } = this.state.markerPosition;
 
@@ -192,7 +186,7 @@ class App extends React.Component {
     console.log(layerArray[0].feature.properties.CNTYNAME)
 
     let county = layerArray[0].feature.properties.CNTYNAME;
-    return county;
+    return county[0].toUpperCase() + county.slice(1).toLowerCase();
   }
 
   // modal functions
