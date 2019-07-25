@@ -40,6 +40,12 @@ const mHeader = {
   marginBottom: "20px",
 }
 
+const mSubtitle = {
+  color: 'green',
+  paddingBottom: '8%',
+  textAlign: 'center'
+}
+
 
 // main app component
 class App extends React.Component {
@@ -57,6 +63,9 @@ class App extends React.Component {
       borderLayer: L.geoJSON(BorderData),
       countyLayer: L.geoJSON(CountyData),
       modalOpen: false,
+      countyGuess: 'Addison',
+      correctGuess: false,
+      score: 100
     };
     // bind functions
     this.moveMarker = this.moveMarker.bind(this);
@@ -69,6 +78,8 @@ class App extends React.Component {
     this.handleGuess= this.handleGuess.bind(this);
     this.getCounty = this.getCounty.bind(this);
     this.getTown = this.getTown.bind(this);
+    this.handleChange = this.handleChange.bind(this);
+    this.handleGuess = this.handleGuess.bind(this);
     console.log(this.state.borderLayer);
   }
 
@@ -199,7 +210,9 @@ class App extends React.Component {
   //function handles what happens after model opens
   afterOpenModal() {
     // references are now sync'd and can be accessed.
-    // this.subtitle.style.color = '#f00';
+    this.subtitle.style.color = '#ad8';
+    this.subtitle.style.paddingBottom = '8%';
+    this.subtitle.style.textAlign = 'center';
   }
   
   // function handles closing modal
@@ -211,8 +224,28 @@ class App extends React.Component {
   handleGuess(e) {
     e.preventDefault();
     console.log('guess!');
+    
 
-    this.closeModal();
+    console.log(`county guess: ${this.state.countyGuess}`);
+    // if the county guess is the same as the county
+    if (this.state.countyGuess === this.state.county) {
+      // display correct message in modal
+      this.subtitle.textContent = 'Correct!';
+      this.setState({correctGuess: true, gameStarted: false});
+      this.closeModal();  // close modal
+    } else {
+      // otherwise display wrong in modal
+      this.subtitle.textContent = 'WRONG! TRY AGAIN';
+      // subtract from score
+      this.setState({score: this.state.score - 10});
+    }
+
+    this.closeModal();  // close the modal
+  }
+
+  handleChange(e) {
+    console.log(`handle change: ${e.target.value}`);
+    this.setState({countyGuess: e.target.value});
   }
 
   // render function
@@ -223,40 +256,44 @@ class App extends React.Component {
     const giveUp = this.state.giveUp;
     const county = this.state.county;
     const town = this.state.town;
+    const correctGuess = this.state.correctGuess;
+    const score = this.state.score;
     console.log(this.state.markerPosition);
     console.log({markerPosition});
 
     return (
       <div>
         <Map markerPosition={markerPosition} borderLayer={borderLayer} />
-        { // if give up clicked, give LocationInfo the markerPosition, county, and town 
-          giveUp && 
+        { // if give up clicked or user guessed correctly, give LocationInfo the markerPosition, county, and town 
+          (giveUp || correctGuess) && 
             <LocationInfo markerPosition={this.state.markerPosition} 
                           county={county} town={town} /> }
-        { // if give up button not clicked, LocationInfo gets '??'
-          !giveUp && 
+        { // if give up button not clicked and user did not guess correctly, LocationInfo gets '??'
+          (!giveUp && !correctGuess) && 
             <LocationInfo markerPosition={{lat: '??', lng: '??'}}
                           county={'??'} town={'??'} /> }
-        <div>Current markerPosition: lat: {markerPosition.lat}, lng: {markerPosition.lng}</div>
+        <div>Current score: {score}</div>
         <button onClick={this.moveMarker} > Move marker </button>
+
         <GameButtons gameStarted={gameStarted}
                     clickStart={this.clickStart}
                     handleGiveup={this.handleGiveup}
                     openGuessModal={this.openModal} />
 
         <Modal  id="guessModal"
+                closeTimeoutMS={1500}
                 isOpen={this.state.modalOpen}
                 onAfterOpen={this.afterOpenModal}
                 onRequestClose={this.closeModal}
                 style={customStyles}
                 contentLabel="Example Modal" >
 
-          <h2 style={mHeader}>Know where you are?</h2>
+          <h2 ref={subtitle => this.subtitle = subtitle}>Know which county?</h2>
           
-          <form >
+          <form onSubmit={this.handleGuess}>
             <label>Guess the County: </label>
-            <CountyList />
-            <button onClick={this.handleGuess}>Guess</button>
+            <CountyList handleChange={this.handleChange} />
+            <input type="submit" value="Guess"/>
             <button onClick={this.closeModal}>Cancel</button>
           </form>
 

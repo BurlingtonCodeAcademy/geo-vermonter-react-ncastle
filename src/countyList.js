@@ -7,7 +7,7 @@ class CountyList extends React.Component {
   
   render() {
     return(
-      <select name="counties">
+      <select name="counties" value={this.props.guess} onChange={this.props.handleChange}>
         <option value="Addison">Addison</option>
         <option value="Bennington">Bennington</option>
         <option value="Caledonia">Caledonia</option>
