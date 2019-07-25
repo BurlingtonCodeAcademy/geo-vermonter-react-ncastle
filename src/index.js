@@ -77,7 +77,7 @@ class App extends React.Component {
     this.closeModal = this.closeModal.bind(this);
     this.handleGuess= this.handleGuess.bind(this);
     this.getCounty = this.getCounty.bind(this);
-    this.getTown = this.getTown.bind(this);
+    this.getTown = this.getTownCounty.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.handleGuess = this.handleGuess.bind(this);
     console.log(this.state.borderLayer);
@@ -142,8 +142,8 @@ class App extends React.Component {
     }
     //console.log(` random: ${JSON.stringify(randomLatLon())}`);
     const { lat, lon } = randomLatLon();
-    const county = this.getCounty();
-    const town = await this.getTown(lat, lon);
+    // const county = this.getCounty();
+    const {town, county } = await this.getTownCounty(lat, lon);
     console.log(`${town} ${county}`);
 
     // set marker position to new randomLatLon
@@ -174,31 +174,33 @@ class App extends React.Component {
 
     // fetch json from nominatim containing the address specified by the lat and lon query params
     // using nominatim reverse geocoding, may be a different / better way to do this
-  async getTown(lat, lng) {
-    let town = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=geojson`)
+  async getTownCounty(lat, lng) {
+    let {town, county} = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=geojson`)
     .then(response => response.json())
     .then(json => {
+      console.log({json});
       let address = json.features[0].properties.address;  // get address from json
       let town = address.town || address.city || address.village || address.hamlet; // set town
-      return JSON.stringify(town);
+      console.log(address.county)
+      return {town: JSON.stringify(town), county: address.county };
     });
-    return town.split('"')[1];  // this removes the quotation marks from string
+    return {town: town.split('"')[1], county: county };  // this removes the quotation marks from string
   }
 
   // returns the county that the marker is currently in
-  getCounty() {
-    let { lat, lng } = this.state.markerPosition;
+  // getCounty() {
+  //   let { lat, lng } = this.state.markerPosition;
 
-    // test if inside border
-    const layerArray = leafletPip.pointInLayer(
-      [lng, lat], this.state.countyLayer
-    );
-    console.log({layerArray});
-    console.log(layerArray[0].feature.properties.CNTYNAME)
+  //   // test if inside border
+  //   const layerArray = leafletPip.pointInLayer(
+  //     [lng, lat], this.state.countyLayer
+  //   );
+  //   console.log({layerArray});
+  //   console.log(layerArray[0].feature.properties.CNTYNAME)
 
-    let county = layerArray[0].feature.properties.CNTYNAME;
-    return county[0].toUpperCase() + county.slice(1).toLowerCase();
-  }
+  //   let county = layerArray[0].feature.properties.CNTYNAME;
+  //   return county[0].toUpperCase() + county.slice(1).toLowerCase();
+  // }
 
   // modal functions
 
