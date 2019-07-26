@@ -13,6 +13,7 @@ import CountyData from './vtCountyPolygons';
 import LocationInfo from './locationinfo';
 import CountyList from './countyList';
 import MovementButtons from './movementButtons';
+import { parenthesizedExpression } from '@babel/types';
 
 Modal.setAppElement('#root');
 
@@ -49,6 +50,11 @@ const mSubtitle = {
   paddingBottom: '8%',
   textAlign: 'center'
 }
+
+var latlngs = [
+  [43.99528, -72.69156],
+  [43.2, -72.5]
+];
 
 
 /** Main App Component **/
@@ -154,8 +160,11 @@ class App extends React.Component {
       correctGuess    : false,
       countyGuess     : 'Addison',
       county          : county,
-      town            : town
+      town            : town,
+      moves           : [[lat, lon]]
     });
+
+    console.log(`moves: ${this.state.moves}`);
     
     console.log(`${this.state.markerPosition.lng} ${this.state.markerPosition.lat} ${this.state.county} ${this.state.town}`);
   }
@@ -208,7 +217,7 @@ class App extends React.Component {
       this.setState({score: this.state.score - 10});
     }
 
-    this.closeModal(evt);  // close the modal
+    // this.closeModal(evt);  // close the modal
   }
 
   handleChange(e) {
@@ -221,58 +230,72 @@ class App extends React.Component {
   moveNorth() {
     const { lat, lng } = this.state.markerPosition;
     const score = this.state.score;
+    const moves = this.state.moves.concat([[lat + 0.001, lng]]);
     this.setState({
       markerPosition: {
         lat: lat + 0.001,
         lng: lng
       },
-      score: score - 1
+      score: score - 1,
+      moves: moves
     });
+    console.log(`movesN: ${this.state.moves}`);
   }
 
   moveSouth() {
     const { lat, lng } = this.state.markerPosition;
     const score = this.state.score;
+    const moves = this.state.moves.concat([[lat - 0.001, lng]]);
     this.setState({
       markerPosition: {
         lat: lat - 0.001,
         lng: lng
       },
-      score: score - 1
+      score: score - 1,
+      moves: moves
     });
+    console.log(`movesS: ${this.state.moves}`);
   }
 
   moveEast() {
     const { lat, lng } = this.state.markerPosition;
     const score = this.state.score;
+    const moves = this.state.moves.concat([[lat, lng + 0.001]]);
     this.setState({
       markerPosition: {
         lat: lat,
         lng: lng + 0.001
       },
-      score: score - 1
+      score: score - 1,
+      moves: moves
     });
+    console.log(`movesE: ${this.state.moves}`);
   }
 
   moveWest() {
     const { lat, lng } = this.state.markerPosition;
     const score = this.state.score;
+    const moves = this.state.moves.concat([[lat, lng - 0.001]]);
     this.setState({
       markerPosition: {
         lat: lat,
         lng: lng - 0.001
       },
-      score: score - 1
+      score: score - 1,
+      moves: moves
     });
+    console.log(`movesW: ${this.state.moves}`);
   }
 
   returnToStart() {
     const { lat, lng } = this.state.startPosition;
+    const moves = this.state.moves.concat([[lat, lng]]);
     this.setState({
       markerPosition: {
         lat: lat,
         lng: lng
-      }
+      },
+      moves: moves
     });
   }
 
@@ -309,11 +332,22 @@ class App extends React.Component {
     const town =            this.state.town;
     const correctGuess =    this.state.correctGuess;
     const score =           this.state.score;
+    const moves =           this.state.moves;
+    let polyline;
+
+    console.log({moves});
+    if (moves) {
+       polyline = L.polyline( moves,
+                            { color: 'white',
+                              dashArray: "5 15",
+                              dashOffset: "10px" } );
+    }
 
     return (
       <div>
 
-        <Map markerPosition={markerPosition} borderLayer={borderLayer} />
+        <Map  markerPosition={markerPosition} borderLayer={borderLayer}
+              polyline={polyline}/>
         { // if give up clicked or user guessed correctly, give LocationInfo the markerPosition, county, and town 
           (giveUp || correctGuess) && 
             <LocationInfo markerPosition={this.state.markerPosition} 

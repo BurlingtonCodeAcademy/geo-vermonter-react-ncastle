@@ -47,6 +47,10 @@ class Map extends React.Component {
         }), // can add more layers
       ]
     });
+
+    
+
+    
   
 
     // add marker to the markerPosition passed in as a prop
@@ -72,6 +76,7 @@ class Map extends React.Component {
       this.map.setMaxZoom(18);
       this.map.setZoom(18);
       this.map.panTo(this.props.markerPosition);
+      this.props.polyline.addTo(this.map);
     }
   }
 
