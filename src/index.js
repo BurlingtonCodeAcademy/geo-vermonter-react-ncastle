@@ -78,9 +78,13 @@ class App extends React.Component {
     this.closeModal = this.closeModal.bind(this);
     this.handleGuess= this.handleGuess.bind(this);
     // this.getCounty = this.getCounty.bind(this);
-    this.getTown = this.getTownCounty.bind(this);
+    this.getTownCounty = this.getTownCounty.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.handleGuess = this.handleGuess.bind(this);
+    this.moveNorth = this.moveNorth.bind(this);
+    this.moveEast = this.moveEast.bind(this);
+    this.moveSouth = this.moveSouth.bind(this);
+    this.moveWest = this.moveWest.bind(this);
     console.log(this.state.borderLayer);
   }
 
@@ -155,6 +159,8 @@ class App extends React.Component {
       },
       gameStarted: true,
       giveUp: false,
+      correctGuess: false,
+      countyGuess: 'Addison',
       county: county,
       town: town
     });
@@ -182,8 +188,8 @@ class App extends React.Component {
       console.log({json});
       let address = json.features[0].properties.address;  // get address from json
       let town = address.town || address.city || address.village || address.hamlet; // set town
-      console.log(address.county)
-      return {town: JSON.stringify(town), county: address.county };
+      // console.log(address.county.split(" ")[0])
+      return {town: JSON.stringify(town), county: address.county.split(" ")[0] };
     });
     return {town: town.split('"')[1], county: county };  // this removes the quotation marks from string
   }
@@ -219,23 +225,24 @@ class App extends React.Component {
   }
   
   // function handles closing modal
-  closeModal() {
+  closeModal(e) {
+    e.preventDefault();
     this.setState({modalOpen: false});
   }
 
   // function will handle what happens when user makes a guess
-  handleGuess(e) {
-    e.preventDefault();
+  handleGuess(evt) {
+    evt.preventDefault();
     console.log('guess!');
-    
-
     console.log(`county guess: ${this.state.countyGuess}`);
+    console.log(`county: ${this.state.county}`)
+
     // if the county guess is the same as the county
-    if (this.state.countyGuess === this.state.county) {
+    if (this.state.county.includes(this.state.countyGuess)) {
       // display correct message in modal
       this.subtitle.textContent = 'Correct!';
       this.setState({correctGuess: true, gameStarted: false});
-      this.closeModal();  // close modal
+      this.closeModal(evt);  // close modal
     } else {
       // otherwise display wrong in modal
       this.subtitle.textContent = 'WRONG! TRY AGAIN';
@@ -243,12 +250,61 @@ class App extends React.Component {
       this.setState({score: this.state.score - 10});
     }
 
-    this.closeModal();  // close the modal
+    this.closeModal(evt);  // close the modal
   }
 
   handleChange(e) {
     console.log(`handle change: ${e.target.value}`);
     this.setState({countyGuess: e.target.value});
+  }
+
+  // functions for movement buttons
+  moveNorth() {
+    const { lat, lng } = this.state.markerPosition;
+    const score = this.state.score;
+    this.setState({
+      markerPosition: {
+        lat: lat + 0.001,
+        lng: lng
+      },
+      score: score - 1
+    });
+  }
+
+  moveSouth() {
+    const { lat, lng } = this.state.markerPosition;
+    const score = this.state.score;
+    this.setState({
+      markerPosition: {
+        lat: lat - 0.001,
+        lng: lng
+      },
+      score: score - 1
+    });
+  }
+
+  moveEast() {
+    const { lat, lng } = this.state.markerPosition;
+    const score = this.state.score;
+    this.setState({
+      markerPosition: {
+        lat: lat,
+        lng: lng + 0.001
+      },
+      score: score - 1
+    });
+  }
+
+  moveWest() {
+    const { lat, lng } = this.state.markerPosition;
+    const score = this.state.score;
+    this.setState({
+      markerPosition: {
+        lat: lat,
+        lng: lng - 0.001
+      },
+      score: score - 1
+    });
   }
 
   // render function
@@ -283,7 +339,10 @@ class App extends React.Component {
                     handleGiveup={this.handleGiveup}
                     openGuessModal={this.openModal} />
         
-        <MovementButtons />
+        <MovementButtons  moveNorth={this.moveNorth}
+                          moveEast={this.moveEast}
+                          moveSouth={this.moveSouth}
+                          moveWest={this.moveWest} />
 
         <Modal  id="guessModal"
                 closeTimeoutMS={1500}

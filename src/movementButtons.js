@@ -10,10 +10,10 @@ class movementButtons extends React.Component {
     return(
 
       <div id="movementButtons">
-        <button type='button' onClick={console.log('dosomething')}>NORTH</button>
-        <button type='button' onClick={console.log('dosomething')}>EAST</button>
-        <button type='button' onClick={console.log('dosomething')}>SOUTH</button>
-        <button type='button' onClick={console.log('dosomething')}>WEST</button>
+        <button onClick={this.props.moveNorth}>NORTH</button>
+        <button onClick={this.props.moveEast}>EAST</button>
+        <button onClick={this.props.moveSouth}>SOUTH</button>
+        <button onClick={this.props.moveWest}>WEST</button>
       </div>
 
     );
