@@ -1,12 +1,12 @@
 import React from 'react';
 
 
-// game button component
+/** Game Button Component **/
+
 class GameButtons extends React.Component {
 
   // required render function returns JSX for the buttons
   render() {
-
     if(!this.props.gameStarted) {
       return (
         <div id="game-buttons">
@@ -25,7 +25,6 @@ class GameButtons extends React.Component {
       );
     }
   }
-
 }
 
 // export the component

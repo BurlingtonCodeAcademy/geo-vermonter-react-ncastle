@@ -3,6 +3,7 @@ import L from 'leaflet';
 import CountyMap from './vermont-county-map.gif';
 
 
+/** Styles **/
 const mapStyle = {
   width: '70%',
   height: '600px',
@@ -28,7 +29,8 @@ const divStyle = {
 }
 
 
-// create a map component
+/** Map Component**/
+
 class Map extends React.Component {
 
   // this is called when a component is mounted to the DOM

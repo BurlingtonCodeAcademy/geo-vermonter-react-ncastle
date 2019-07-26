@@ -1,6 +1,8 @@
 import React from 'react';
 
 
+/** CountyList Component **/
+
 class CountyList extends React.Component {
 
   render() {
