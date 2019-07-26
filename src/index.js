@@ -13,7 +13,6 @@ import CountyData from './vtCountyPolygons';
 import LocationInfo from './locationinfo';
 import CountyList from './countyList';
 import MovementButtons from './movementButtons';
-import { parenthesizedExpression } from '@babel/types';
 
 Modal.setAppElement('#root');
 
