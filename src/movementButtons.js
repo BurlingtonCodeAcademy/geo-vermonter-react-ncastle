@@ -12,6 +12,7 @@ class movementButtons extends React.Component {
         <button onClick={this.props.moveEast}>EAST</button>
         <button onClick={this.props.moveSouth}>SOUTH</button>
         <button onClick={this.props.moveWest}>WEST</button>
+        <button onClick={this.props.returnToStart}>RETURN</button>
       </div>
     );
   }

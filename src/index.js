@@ -60,6 +60,7 @@ class App extends React.Component {
     // default state for app
     this.state = {
       markerPosition  : { lat: 43.99528, lng: -72.69156 },
+      startPosition   : { lat: undefined, lng: undefined },
       county          : undefined,
       town            : undefined,
       gameStarted     : false,
@@ -86,6 +87,7 @@ class App extends React.Component {
     this.moveEast =         this.moveEast.bind(this);
     this.moveSouth =        this.moveSouth.bind(this);
     this.moveWest =         this.moveWest.bind(this);
+    this.returnToStart =    this.returnToStart.bind(this);
   }
 
 
@@ -145,6 +147,7 @@ class App extends React.Component {
     this.setState({
       // this is a random lat/lon
       markerPosition  : { lat: lat, lng: lon },
+      startPosition   : { lat: lat, lng: lon },
       gameStarted     : true,
       // set to default values to start or reset game
       giveUp          : false,
@@ -263,6 +266,16 @@ class App extends React.Component {
     });
   }
 
+  returnToStart() {
+    const { lat, lng } = this.state.startPosition;
+    this.setState({
+      markerPosition: {
+        lat: lat,
+        lng: lng
+      }
+    });
+  }
+
   
   /** Modal Functions **/
 
@@ -299,7 +312,7 @@ class App extends React.Component {
 
     return (
       <div>
-        
+
         <Map markerPosition={markerPosition} borderLayer={borderLayer} />
         { // if give up clicked or user guessed correctly, give LocationInfo the markerPosition, county, and town 
           (giveUp || correctGuess) && 
@@ -320,7 +333,8 @@ class App extends React.Component {
         <MovementButtons  moveNorth   ={this.moveNorth}
                           moveEast    ={this.moveEast}
                           moveSouth   ={this.moveSouth}
-                          moveWest    ={this.moveWest} />
+                          moveWest    ={this.moveWest}
+                        returnToStart ={this.returnToStart} />
 
         <Modal  id              = "guessModal"
                 closeTimeoutMS  = {1500}
