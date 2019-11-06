@@ -13,6 +13,7 @@ import CountyData from './vtCountyPolygons';
 import LocationInfo from './locationinfo';
 import CountyList from './countyList';
 import MovementButtons from './movementButtons';
+import Scores from './scores';
 
 Modal.setAppElement('#root');
 
@@ -50,10 +51,13 @@ const mSubtitle = {
   textAlign: 'center'
 }
 
-var latlngs = [
-  [43.99528, -72.69156],
-  [43.2, -72.5]
-];
+
+
+// create storage for local storage
+let myStorage = window.localStorage;
+console.log({myStorage});
+
+const highscore_div = document.getElementById('nav');
 
 
 /** Main App Component **/
@@ -61,7 +65,7 @@ var latlngs = [
 class App extends React.Component {
   // contructor
   constructor() {
-    super()
+    super();
     // default state for app
     this.state = {
       markerPosition  : { lat: 43.99528, lng: -72.69156 },
@@ -75,7 +79,9 @@ class App extends React.Component {
       modalOpen       : false,
       countyGuess     : 'Addison',
       correctGuess    : false,
-      score           : 100
+      score           : 100,
+      showing         : 'game',
+      scoresArray     : [],
     };
     // bind functions
     this.clickStart =       this.clickStart.bind(this);
@@ -93,6 +99,28 @@ class App extends React.Component {
     this.moveSouth =        this.moveSouth.bind(this);
     this.moveWest =         this.moveWest.bind(this);
     this.returnToStart =    this.returnToStart.bind(this);
+    this.sendScore =        this.sendScore.bind(this);
+    this.saveScoreLocally = this.saveScoreLocally.bind(this);
+    this.toggleScreen =     this.toggleScreen.bind(this);
+    this.setScoresArray =   this.setScoresArray.bind(this);
+
+    // target high score div for toggling high score state
+    highscore_div.addEventListener('click', this.toggleScreen);
+
+  }
+  
+  componentDidMount() {
+    this.setScoresArray();
+  }
+
+  toggleScreen() {
+    if (this.state.showing === 'game') {
+      highscore_div.innerText = 'Click for Game';
+      this.setState({showing: 'scores'});
+    } else {
+      highscore_div.innerText = 'Click for High Scores';
+      this.setState({showing: 'game'});
+    }
   }
 
 
@@ -148,7 +176,7 @@ class App extends React.Component {
     const {town, county } = await this.getTownCounty(lat, lon);
     console.log(`${town} ${county}`);
 
-    // update the state
+    // update/reset the state
     this.setState({
       // this is a random lat/lon
       markerPosition  : { lat: lat, lng: lon },
@@ -160,7 +188,8 @@ class App extends React.Component {
       countyGuess     : 'Addison',
       county          : county,
       town            : town,
-      moves           : [[lat, lon]]
+      moves           : [[lat, lon]],
+      score           : 100,
     });
 
     console.log(`moves: ${this.state.moves}`);
@@ -176,6 +205,34 @@ class App extends React.Component {
         gameStarted: false,
         giveUp: true,
       })
+  }
+
+  sendScore() {
+    console.log('sending score!');
+    // do some stuff, send score to server
+  }
+
+  saveScoreLocally() {
+    console.log('saving score locally');
+    // do some stuff, save score locally
+    myStorage.setItem(`game ${myStorage.length+1}`, `score: ${this.state.score}`)
+    console.log(myStorage);
+
+    this.setScoresArray();
+    
+  }
+
+  // pushes all items in local storage to an array and is set in state
+  setScoresArray() {
+    console.log('setting score array')
+    let scoresArray = [];
+
+    // set state of scores as array
+    for (let i = 1; i <= myStorage.length; i++) {
+      console.log(myStorage.getItem(`game ${i}`));
+      scoresArray.push(myStorage.getItem(`game ${i}`));
+    }
+    this.setState({scoresArray: scoresArray});
   }
 
 
@@ -207,7 +264,7 @@ class App extends React.Component {
     if (this.state.county.includes(this.state.countyGuess)) {
       // display correct message in modal
       this.subtitle.textContent = 'Correct!';
-      this.setState({correctGuess: true, gameStarted: false});
+      this.setState({correctGuess: true, gameStarted: false}, this.saveScoreLocally)
       this.closeModal(evt);  // close modal
     } else {
       // otherwise display wrong in modal
@@ -216,6 +273,7 @@ class App extends React.Component {
       this.setState({score: this.state.score - 10});
     }
 
+
     // this.closeModal(evt);  // close the modal
   }
 
@@ -223,6 +281,7 @@ class App extends React.Component {
     console.log(`handle change: ${e.target.value}`);
     this.setState({countyGuess: e.target.value});
   }
+
 
   /* functions for movement buttons, when one is clicked
      score decreases by 1 point */
@@ -312,6 +371,8 @@ class App extends React.Component {
     this.subtitle.style.color = '#ad8';
     this.subtitle.style.paddingBottom = '8%';
     this.subtitle.style.textAlign = 'center';
+
+    this.form.style.padding = '50px';
   }
   
   // function handles closing modal
@@ -332,6 +393,7 @@ class App extends React.Component {
     const correctGuess =    this.state.correctGuess;
     const score =           this.state.score;
     const moves =           this.state.moves;
+    const scoresArray =     this.state.scoresArray;
     let polyline;
 
     console.log({moves});
@@ -341,56 +403,62 @@ class App extends React.Component {
                               dashArray: "5 15",
                               dashOffset: "10px" } );
     }
-
-    return (
-      <div>
-
-        <Map  markerPosition={markerPosition} borderLayer={borderLayer}
-              polyline={polyline}/>
-        { // if give up clicked or user guessed correctly, give LocationInfo the markerPosition, county, and town 
-          (giveUp || correctGuess) && 
-            <LocationInfo markerPosition={this.state.markerPosition} 
-                          county={county} town={town} /> }
-        { // if give up button not clicked and user did not guess correctly, LocationInfo gets '??'
-          (!giveUp && !correctGuess) && 
-            <LocationInfo markerPosition={{lat: '??', lng: '??'}}
-                          county={'??'} town={'??'} /> }
-
-        <div>Current score: {score}</div>
-
-        <GameButtons  gameStarted     ={gameStarted}
-                      clickStart      ={this.clickStart}
-                      handleGiveup    ={this.handleGiveup}
-                      openGuessModal  ={this.openModal} />
+    if (this.state.showing === 'game') {
+      return (
         
-        <MovementButtons  moveNorth   ={this.moveNorth}
-                          moveEast    ={this.moveEast}
-                          moveSouth   ={this.moveSouth}
-                          moveWest    ={this.moveWest}
-                        returnToStart ={this.returnToStart} />
-
-        <Modal  id              = "guessModal"
-                closeTimeoutMS  = {1500}
-                isOpen          = {this.state.modalOpen}
-                onAfterOpen     = {this.afterOpenModal}
-                onRequestClose  = {this.closeModal}
-                style           = {customStyles}
-                contentLabel    = "Example Modal" >
-
-          <h2 ref={subtitle => this.subtitle = subtitle}>Know which county?</h2>
+        <div>
+          <Map  markerPosition={markerPosition} borderLayer={borderLayer}
+                polyline={polyline}/>
+          { // if give up clicked or user guessed correctly, give LocationInfo the markerPosition, county, and town 
+            (giveUp || correctGuess) && 
+              <LocationInfo markerPosition={this.state.markerPosition} 
+                            county={county} town={town} /> }
+          { // if give up button not clicked and user did not guess correctly, LocationInfo gets '??'
+            (!giveUp && !correctGuess) && 
+              <LocationInfo markerPosition={{lat: '??', lng: '??'}}
+                            county={'??'} town={'??'} /> }
+  
+          <div>Current score: {score}</div>
+  
+          <GameButtons  gameStarted     ={gameStarted}
+                        clickStart      ={this.clickStart}
+                        handleGiveup    ={this.handleGiveup}
+                        openGuessModal  ={this.openModal} />
           
-          <form onSubmit = {this.handleGuess}>
-            <label>Guess the County: </label>
-            <CountyList handleChange = {this.handleChange} />
-            <input type="submit" value="Guess"/>
-            <button onClick={this.closeModal}>Cancel</button>
-          </form>
-
-        </Modal>
-      </div>
-    );
-  }
-}
+          <MovementButtons  moveNorth   ={this.moveNorth}
+                            moveEast    ={this.moveEast}
+                            moveSouth   ={this.moveSouth}
+                            moveWest    ={this.moveWest}
+                          returnToStart ={this.returnToStart} />
+  
+          <Modal  id              = "guessModal"
+                  closeTimeoutMS  = {1500}
+                  isOpen          = {this.state.modalOpen}
+                  onAfterOpen     = {this.afterOpenModal}
+                  onRequestClose  = {this.closeModal}
+                  style           = {customStyles}
+                  contentLabel    = "Example Modal" >
+  
+            <h2 ref={subtitle => this.subtitle = subtitle}>Know which county?</h2>
+            
+            <form method="post" onSubmit = {this.handleGuess}
+                  ref={form => this.form = form} >
+              <label id='formLabel' >Guess the County: </label>
+              <CountyList handleChange = {this.handleChange} />
+              <input type="submit" value="Guess"/>
+              <button onClick={this.closeModal}>Cancel</button>
+            </form>
+  
+          </Modal>
+        </div>
+      );  // end return
+    } else if (this.state.showing === 'scores') {
+      return (
+        <Scores scoresArray = {scoresArray}/>
+      );
+    }
+  } // end render
+} // end App
 
 ReactDOM.render(
   <App />,
