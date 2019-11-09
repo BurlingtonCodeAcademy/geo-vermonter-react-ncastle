@@ -8,40 +8,45 @@ const express = require('express');
 const app = express();
 const port = process.env.PORT || 5000;
 
+// use public directory and json
 app.use(express.static('public'))
 app.use(express.json())
 
-
+// route that saves the score sent as the body of a request
 app.post('/scores',
   (request, response) => {
     console.log('req path: ', request.path);
     console.log('req body: ', request.body)
-    console.log("Body is:", JSON.stringify(request.body))
     const result = JSON.stringify(addScore(request.body))
     console.log(result);
     response.send(JSON.stringify(`Saved: ${result}`));
 });
-
+ 
+// displays the scores.json file data when requested
 app.get('/scores.json', (request, response) => {
-  response.type('application/json');
-
-  response.send(JSON.stringify([
-    {name: 'nick', value: 100, date: "2019-01-01T12:15:01"},
-    {name: 'adam', value: 75, date: "2019-01-01T12:30:01"},
-    {name: 'john', value: 90, date: "2019-10-20T12:30:01"}
-  ]))
+  let scoreFile = $path.join('src/scores.json');
+  try {
+    let data = fs.readFileSync(scoreFile);
+    let json = JSON.parse(data);
+    response.send(json);
+  } catch (err) {
+    throw err;
+  }
 });
 
-function addScore(body) {
+// adds a score to the the scores.json file 
+function addScore(score) {
   console.log('addScore - server.js')
+  // get path to file
   let scoreFile = $path.join('src/scores.json');
-  const score = body;
   console.log({scoreFile})
   try {
     console.log('read file')
+    // read file data, push new data to array
     let data = fs.readFileSync(scoreFile);
     let json = JSON.parse(data);
     json.push(score);
+    // write new score file 
     fs.writeFileSync(scoreFile, JSON.stringify(json));
     console.log('info saved');
     return score;
