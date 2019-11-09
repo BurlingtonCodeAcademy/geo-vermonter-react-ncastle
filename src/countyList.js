@@ -14,7 +14,7 @@ class CountyList extends React.Component {
         <option value="Chittenden">Chittenden</option>
         <option value="Essex">Essex</option>
         <option value="Franklin">Franklin</option>
-        <option value="Grand Isle">Grand Isle</option>
+        <option value="Grand">Grand Isle</option>
         <option value="Lamoille">Lamoille</option>
         <option value="Orange">Orange</option>
         <option value="Orleans">Orleans</option>

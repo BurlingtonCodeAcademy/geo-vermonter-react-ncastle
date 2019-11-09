@@ -15,7 +15,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "eject": "react-scripts eject",
-    "test": "cypress run"
+    "test": "cypress run",
+    "server": "nodemon server.js"
   },
   "eslintConfig": {
     "extends": "react-app"

@@ -207,15 +207,24 @@ class App extends React.Component {
       })
   }
 
-  sendScore() {
+  async sendScore() {
     console.log('sending score!');
     // do some stuff, send score to server
+    await fetch('/scores', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({name: "tanto", value: "999", date:"2019-11-04T18:10:50"})
+    })
+    .then(response => response.json())
+    .then(json => console.log('send score response json ' + json));
   }
 
   saveScoreLocally() {
     console.log('saving score locally');
     // do some stuff, save score locally
-    myStorage.setItem(`game ${myStorage.length+1}`, `score: ${this.state.score}`)
+    myStorage.setItem(`game ${myStorage.length+1}`, `${this.state.score}`)
     console.log(myStorage);
 
     this.setScoresArray();
@@ -265,6 +274,7 @@ class App extends React.Component {
       // display correct message in modal
       this.subtitle.textContent = 'Correct!';
       this.setState({correctGuess: true, gameStarted: false}, this.saveScoreLocally)
+      this.sendScore();
       this.closeModal(evt);  // close modal
     } else {
       // otherwise display wrong in modal

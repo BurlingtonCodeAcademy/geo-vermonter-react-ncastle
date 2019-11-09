@@ -13,9 +13,8 @@ export default class Scores extends React.Component {
           <ul>
             {this.props.scoresArray.map((score, index) => {
             return(
-              
-                <li key={index}>
-                  <span>{`Game ${index+1}: `}</span> {score}; 
+                <li className={"score"} key={index}>
+                  <span>{`Game ${index+1}: `}</span> {score} 
                 </li>
             );
         })}
